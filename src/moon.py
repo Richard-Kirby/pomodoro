@@ -45,6 +45,13 @@ def button_callback(pin):
 
 displayhatmini.on_button_pressed(button_callback)
 
+def draw_icons(buffer):
+    buffer.paste(Image.open("icons/eject.png"),(0, 60), 0)
+    buffer.paste(Image.open("icons/pause.png"),(280, 40), 0)
+    buffer.paste(Image.open("icons/back-button.png"),(0, 200), 0)
+    buffer.paste(Image.open("icons/next-button.png"),(280, 200), 0)
+
+
 with Image.open("Moon_phases.jpg") as org_img:  #
 
     img_crop  = [
@@ -83,9 +90,11 @@ with Image.open("Moon_phases.jpg") as org_img:  #
         buffer.save(f"buffer{i}.jpg")
         #buffer.paste(img, (0, 0))
         draw = ImageDraw.Draw(buffer)
+        draw_icons(buffer)
         draw.text((10, 70), f"Image {i}", font=font, fill=(255, 0, 0))
         displayhatmini.display()
         time.sleep(1)
+
 
 #pi = pigpio.pi()
 #pi.set_pull_up_down(19, pigpio.PUD_UP)
