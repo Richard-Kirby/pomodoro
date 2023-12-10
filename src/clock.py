@@ -3,6 +3,7 @@ import threading
 
 import time
 import test
+import display
 import timers.timer_seq as timer_seq
 
 
@@ -15,6 +16,9 @@ class Clock(threading.Thread):
         self.current_time = datetime.datetime.now()
         self.current_timer_seq = self.timer_seq_mgr.timer_seq
         self.current_timer = self.current_timer_seq.current_timer
+        self.hat_display = display.LcdDisplay(self.current_timer.toggle_pause,
+                                              self.current_timer.back,
+                                              self.current_timer.complete)
 
     # Main function that runs as part of the thread. Ticks time down and gets current time for display as needed.
     def run(self):

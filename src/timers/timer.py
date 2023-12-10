@@ -53,9 +53,14 @@ class Timer(ABC):
     def start(self):
         self._state = 'running'
 
-    # Change state to be paused. Might already be paused.
-    def pause(self):
-        self._state = 'paused'
+    # Change state to be paused or un-paused. Might already be paused.
+    def toggle_pause(self):
+        if self._state == 'paused':
+            self._state = 'running'
+        elif self._state == 'running':
+            self._state == 'paused'
+        else:
+            raise ValueError
 
     # Restart the timer - this cancels any time spent. Goes immediately to running, not paused.
     # Overrun time is also reset as the timer should be ready for another use.
