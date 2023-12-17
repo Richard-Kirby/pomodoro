@@ -44,7 +44,7 @@ class Timer(ABC):
         # start off with paused state.
         self._state = "paused"
         self.type = None
-        self.colour = '000000'
+        self.colour = '#000000'
 
         # keep track of the overrun of a given timer.
         self.overrun_time = 0
@@ -55,10 +55,13 @@ class Timer(ABC):
 
     # Change state to be paused or un-paused. Might already be paused.
     def toggle_pause(self):
+        print(f"state {self._state}")
         if self._state == 'paused':
             self._state = 'running'
         elif self._state == 'running':
-            self._state == 'paused'
+            self._state = 'paused'
+        elif self._state == 'complete':
+            self._state = 'paused'
         else:
             raise ValueError
 
@@ -109,7 +112,7 @@ class WorkTimer(Timer):
     def __init__(self, name, description, length_sec: int):
         super().__init__(name, description, length_sec)
         self.type = 'Work'
-        self.colour = 'FF0000'
+        self.colour = '#FF0000'
 
 
 # Concrete Break Timer Class.
@@ -117,7 +120,7 @@ class BreakTimer(Timer):
     def __init__(self, name, description, length_sec: int):
         super().__init__(name, description, length_sec)
         self.type = 'Break'
-        self.colour = '00FF00'
+        self.colour = '#00FF00'
 
 
 # Tests

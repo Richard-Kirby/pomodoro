@@ -46,6 +46,14 @@ class TimerSequence:
         for count in range(self.speed):
             self.current_timer.decrement_time()
 
+    # Toggle the pause on the current timer.
+    def toggle_pause_current_timer(self):
+        self.current_timer.toggle_pause()
+
+    #Restart the current timer.
+    def restart_current_timer(self):
+        self.current_timer.restart()
+
     # Restarting sequence just creates the sequence again.
     def restart_sequence(self):
         self.create_sequence()
@@ -58,6 +66,7 @@ class TimerSequence:
         # Append the current timer to the end of the timer sequence.
         self.timer_seq.append(self.current_timer)
         self.current_timer = self.timer_seq.pop(0)
+        self.current_timer.start()
 
 
 if __name__ == '__main__':
