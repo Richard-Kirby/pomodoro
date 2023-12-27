@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import time
-import pigpio
+# import pigpio
 from displayhatmini import DisplayHATMini
 
 try:
@@ -55,45 +55,45 @@ def draw_icons(buffer):
 with Image.open("Moon_phases.jpg") as org_img:  #
 
     img_crop  = [
-    (33, 50, 323, 340),
-    (330, 50, 620, 340),
-    (630, 50, 920, 340),
-    (930, 50, 1220, 340),
-    (33, 355, 323, 635),
-    (330, 355, 620, 635),
-    (628, 357, 918, 637),
-    (930, 350, 1220, 610),
-    (60, 650, 320, 910),
-    (350, 650, 610, 910),
-    (650, 650, 910, 910),
-    (950, 650, 1210, 910),
-    (60, 950, 320, 1210),
-    (350, 950, 610, 1210),
-    (650, 950, 910, 1210),
-    (950, 950, 1210, 1210),
-    (60, 1250, 320, 1510),
-    (350, 1250, 610, 1510),
-    (650, 1250, 910, 1510),
-    (950, 1250, 1210, 1510),
-    (60, 1550, 320, 1810),
-    (350, 1550, 610, 1810),
-    (650, 1550, 910, 1810),
-    (950, 1550, 1210, 1810)]
+    (35, 50, 325, 340),  # 0
+    (335, 50, 625, 340),
+    (635, 50, 925, 340),
+    (935, 50, 1225, 340),  # 3
+    (33, 350, 323, 640),
+    (330, 350, 620, 640 ),
+    (638, 355, 918, 635),  # 6
+    (940, 355, 1220, 635),
+    (45, 660, 315, 930),
+    (350, 660, 620, 930),  # 9
+    (650, 660, 920, 930),
+    (950, 660, 1220, 930),
+    (50, 960, 320, 1230),  # 12
+    (345, 960, 615, 1230),
+    (650, 960, 920, 1230),
+    (950, 960, 1220, 1230),  # 15
+    (40, 1255, 310, 1525),
+    (340, 1255, 610, 1525),
+    (650, 1255, 920, 1525),  # 18
+    (940, 1250, 1220, 1530),
+    (40, 1550, 320, 1830),
+    (340, 1550, 630, 1840),  # 21
+    (640, 1550, 930, 1840),
+    (950, 1550, 1240, 1840)]
 
     for i in range(len(img_crop)):
         img = org_img.crop(img_crop[i])
         #print(f"Image size {img.size}")
+        img.save(f"preimage{i}.jpg")
         img = img.resize((int(DisplayHATMini.HEIGHT), int(DisplayHATMini.HEIGHT)), Image.LANCZOS)
         #img.show()
-        img.save(f"image{i}.jpg")
         buffer.paste(img, (int((DisplayHATMini.WIDTH - DisplayHATMini.HEIGHT)/2), 0))
-        buffer.save(f"buffer{i}.jpg")
+        buffer.save(f"image{i}.jpg")
         #buffer.paste(img, (0, 0))
         draw = ImageDraw.Draw(buffer)
-        draw_icons(buffer)
-        draw.text((10, 70), f"Image {i}", font=font, fill=(255, 0, 0))
+        # draw_icons(buffer)
+
         displayhatmini.display()
-        time.sleep(1)
+        input(f"Image {i} x {img_crop[i][2]-img_crop[i][0]} y {img_crop[i][3]-img_crop[i][1]} press enter")
 
 
 #pi = pigpio.pi()

@@ -41,30 +41,30 @@ class ImageManager:
     def __init__(self):
         self.image_array = None
         self.image_list = {'moon': [
-            'buffer0.jpg',
-            'buffer1.jpg',
-            'buffer2.jpg',
-            'buffer3.jpg',
-            'buffer4.jpg',
-            'buffer5.jpg',
-            'buffer6.jpg',
-            'buffer7.jpg',
-            'buffer8.jpg',
-            'buffer9.jpg',
-            'buffer10.jpg',
-            'buffer11.jpg',
-            'buffer12.jpg',
-            'buffer13.jpg',
-            'buffer14.jpg',
-            'buffer15.jpg',
-            'buffer16.jpg',
-            'buffer17.jpg',
-            'buffer18.jpg',
-            'buffer19.jpg',
-            'buffer20.jpg',
-            'buffer21.jpg',
-            'buffer22.jpg',
-            'buffer23.jpg'
+            'image0.jpg',
+            'image1.jpg',
+            'image2.jpg',
+            'image3.jpg',
+            'image4.jpg',
+            'image5.jpg',
+            'image6.jpg',
+            'image7.jpg',
+            'image8.jpg',
+            'image9.jpg',
+            'image10.jpg',
+            'image11.jpg',
+            'image12.jpg',
+            'image13.jpg',
+            'image14.jpg',
+            'image15.jpg',
+            'image16.jpg',
+            'image17.jpg',
+            'image18.jpg',
+            'image19.jpg',
+            'image20.jpg',
+            'image21.jpg',
+            'image22.jpg',
+            'image23.jpg'
         ]}
 
     # Set the image series to use
@@ -111,6 +111,8 @@ class Display(ABC, threading.Thread):
             self._modes.append(self._curr_mode)
             self._curr_mode = self._modes.pop(0)
 
+        print(f"Current mode {self._curr_mode}")
+
     def run(self):
         while True:
             while not self.current_data_queue.empty():
@@ -131,8 +133,8 @@ class LcdDisplay(Display):
     def __init__(self, toggle_pause_function, restart_function, next_function):
         self.buffer = Image.new("RGB", (DisplayHATMini.WIDTH, DisplayHATMini.HEIGHT,), "BLACK")
 
-        self.fonts = {'main': ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 75),
-                      'sub': ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 25)}
+        self.fonts = {'main': ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSansBold.ttf', 75),
+                      'sub': ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSansBold.ttf', 25)}
 
         self.display = DisplayHATMini(self.buffer, backlight_pwm=True)
         self.display.set_led(0.0, 0.0, 0.0)
@@ -146,11 +148,11 @@ class LcdDisplay(Display):
         self.change_mode()
 
         # Mapping to mode to buttons and functions.
-        self.function_dict = {'clock': {self.display.BUTTON_A: self.change_mode(),
+        self.function_dict = {'clock': {self.display.BUTTON_A: self.change_mode,
                                         self.display.BUTTON_X: self.toggle_pause_function,
                                         self.display.BUTTON_B: self.restart_function,
                                         self.display.BUTTON_Y: self.next_function},
-                              'pomodoro': {self.display.BUTTON_A: self.change_mode(),
+                              'pomodoro': {self.display.BUTTON_A: self.change_mode,
                                            self.display.BUTTON_X: self.toggle_pause_function,
                                            self.display.BUTTON_B: self.restart_function,
                                            self.display.BUTTON_Y: self.next_function}}
@@ -177,16 +179,30 @@ class LcdDisplay(Display):
             self.last_button_press = datetime.datetime.now()
 
     # Draw the icons on the screen according to the mode
+    # ToDo Icons should be different based on mode.
     def draw_icons(self, buffer):
+        # print (f"current mode {self._curr_mode}")
         if self._curr_mode == 'clock':
             buffer.paste(Image.open("icons/eject.png"), (0, 60), 0)
             buffer.paste(Image.open("icons/pause.png"), (280, 40), 0)
             buffer.paste(Image.open("icons/back-button.png"), (0, 200), 0)
             buffer.paste(Image.open("icons/next-button.png"), (280, 200), 0)
+        elif self._curr_mode == 'pomodoro':
+            buffer.paste(Image.open("icons/eject.png"), (0, 60), 0)
+            buffer.paste(Image.open("icons/pause.png"), (280, 40), 0)
+            buffer.paste(Image.open("icons/back-button.png"), (0, 200), 0)
+            buffer.paste(Image.open("icons/next-button.png"), (280, 200), 0)
+        else:
+            raise TypeError
 
     # Update the display to show the latest state.
+    # TODO: add different modes
     def update_display(self):
-        print(f"{self.current_data.current_datetime}, {self.current_data.current_timer_data.remaining_timer_s}")
+        # print(f"{self.current_data.current_datetime}, {self.current_data.current_timer_data.remaining_timer_s}")
+        # self.buffer = Image.new("RGB", (DisplayHATMini.WIDTH, DisplayHATMini.HEIGHT,), "BLACK")
+
+        self.buffer.paste(0, (0,0,DisplayHATMini.WIDTH-1, DisplayHATMini.HEIGHT-1))
+
         disp_date = self.current_data.current_datetime.strftime("%d-%m-%Y")
         disp_time = self.current_data.current_datetime.strftime("%H:%M:%S")
 
@@ -218,15 +234,26 @@ class LcdDisplay(Display):
             self.current_image = self.current_image
 
         with Image.open(self.current_image) as img:
-            self.buffer.paste(img, (int((DisplayHATMini.WIDTH - DisplayHATMini.HEIGHT) / 2), 0))
+            # print(f"image size {img.size} display size {self.display.WIDTH} {self.display.HEIGHT}")
+            # self.buffer.paste(img, (int((DisplayHATMini.WIDTH - DisplayHATMini.HEIGHT) / 2), 0))
+            # print(f"x = {int((self.display.WIDTH - img.size[0])/2)} y = {int((self.display.HEIGHT - img.size[1])/2)}")
+            self.buffer.paste(img, (int((self.display.WIDTH - img.size[0])/2), int((self.display.HEIGHT - img.size[1])/2)))
+
             draw = ImageDraw.Draw(self.buffer)
             self.draw_icons(self.buffer)
 
-            draw.text((5, 0), f"{disp_date}", font=self.fonts['sub'], fill=(255, 0, 0))
-            draw.text((200, 0), f"{disp_time}", font=self.fonts['sub'], fill=(255, 0, 0))
+
+            draw.text((5, 0), f"{disp_date}", font=self.fonts['sub'])
+            draw.text((200, 0), f"{disp_time}", font=self.fonts['sub'])
 
             pomodoro_str_size = self.fonts['main'].getsize(pomodoro_time_str)
-            draw.text(((self.display.WIDTH - pomodoro_str_size[0])/2, 60), f"{pomodoro_time_str}", font=self.fonts['main'],
+
+            text_loc = int ((self.display.WIDTH - pomodoro_str_size[0])/2), 60
+            left, top, right, bottom = draw.textbbox(text_loc, pomodoro_time_str, font=self.fonts['main'])
+            draw.rectangle((left - 5, top - 5, right + 5, bottom + 5), fill="black")
+            # draw.text(position, text, font=font, fill="black")
+
+            draw.text(text_loc, pomodoro_time_str, font=self.fonts['main'],
                       fill=self.current_data.current_timer_data.timer_colour)
 
             # ToDo: need to deal with different modes for font sizes.
@@ -254,11 +281,11 @@ if __name__ == '__main__':
     def next_fnc():
         print("next function test")
 
-    print("here before run")
+    # print("here before run")
     lcd_display = LcdDisplay(toggle_pause_fnc, back_fnc, next_fnc)
     lcd_display.setDaemon(True)
     lcd_display.start()
-    print("here after run")
+    # print("here after run")
     current_data = CurrentData()
     current_timer_data = CurrentTimerData("work", "work timer", "1500", '#FF00FF')
     current_data.current_timer_data = current_timer_data

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import datetime
 import threading
 
@@ -11,8 +13,8 @@ import timers.timer_seq as timer_seq
 class Clock(threading.Thread):
     def __init__(self, timer_speed=1):
         super().__init__()
-        self.timer_speed = 1
-        self.timer_seq_mgr = timer_seq.TimerSequenceManager(speed=timer_speed)
+        self.timer_speed = timer_speed
+        self.timer_seq_mgr = timer_seq.TimerSequenceManager(speed=self.timer_speed)
         self.current_time = datetime.datetime.now()
         self.current_timer_seq = self.timer_seq_mgr.timer_seq
 
@@ -30,13 +32,14 @@ class Clock(threading.Thread):
             self.current_timer_seq.current_timer.return_colour())
         self.lcd_display.start()
 
-    def return_current_timer_data(self):
+    # Decrements the current timer and returns the data
+    def decrement_current_timer(self):
         current_timer_data = display.CurrentTimerData(self.current_timer_seq.current_timer.name,
                                                       self.current_timer_seq.current_timer.description,
                                                       self.current_timer_seq.current_timer.length_sec,
                                                       self.current_timer_seq.current_timer.return_colour())
 
-        self.current_timer_seq.current_timer.decrement_time()
+        self.current_timer_seq.decrement_current_timer()
 
         if self.current_timer_seq.current_timer.time_remaining == 0:
             current_timer_data.remaining_timer_s = self.current_timer_seq.current_timer.overrun_time
@@ -49,7 +52,7 @@ class Clock(threading.Thread):
     def run(self):
         while True:
             self.current_data.current_datetime = datetime.datetime.now()
-            self.current_data.current_timer_data = self.return_current_timer_data()
+            self.current_data.current_timer_data = self.decrement_current_timer()
             self.lcd_display.current_data_queue.put_nowait(self.current_data)
 
             # print(f"Queue {lcd_display.current_data_queue.get_nowait()}")
@@ -59,7 +62,7 @@ class Clock(threading.Thread):
 
 
 if __name__ == '__main__':
-    clock = Clock(15)
+    clock = Clock(1)
     clock.current_timer_seq.current_timer.start()
     clock.setDaemon(True)
     clock.start()

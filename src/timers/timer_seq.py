@@ -1,5 +1,9 @@
 import timers.timer as timer
 from timers.test import Test
+import logging.config
+
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger('raspidoroLogger')
 
 
 # Class to manage the available timer sequences. This is just a shell at the moment.
@@ -25,18 +29,19 @@ class TimerSequence:
     def create_sequence(self):
         # Initial timer list ToDo: make more flexible by adding more timer sequences.
         timer_list = [
-            ['Work', 'Work 1', 'normal working timer', 25 * 60],
-            ['Break', 'Break 1', 'normal working timer', 5 * 60],
-            ['Work', 'Work 2', 'normal working timer', 25 * 60],
-            ['Break', 'Break 2', 'normal working timer', 5 * 60],
-            ['Work', 'Work 3', 'normal working timer', 25 * 60],
-            ['Break', 'Break 3', 'normal working timer', 15 * 60]]
+            ['Work', 'Work 1', 'Work', 25 * 60],
+            ['Break', 'Break 1', 'Short Break - Stretch', 5 * 60],
+            ['Work', 'Work 2', 'Standing Work', 25 * 60],
+            ['Break', 'Break 2', 'Short Break - Water', 5 * 60],
+            ['Work', 'Work 3', 'Work', 25 * 60],
+            ['Break', 'Break 3', 'Long Break - Exercise', 15 * 60]
+        ]
 
         for item in timer_list:
             self.timer_seq.append(self.timer_factory.get_timer(*item))
 
-        for item in self.timer_seq:
-            print(item.return_state_str())
+        # for item in self.timer_seq:
+        #    print(item.return_state_str())
 
         self.current_timer = self.timer_seq.pop(0)
 
@@ -61,12 +66,14 @@ class TimerSequence:
     # Go to the next timer.
     def next_timer(self):  #
         # Restart the current timer -just resetting it.
+        logger.info(f"Current timer {self.current_timer.return_state_str()}")
         self.current_timer.restart()
 
         # Append the current timer to the end of the timer sequence.
         self.timer_seq.append(self.current_timer)
         self.current_timer = self.timer_seq.pop(0)
         self.current_timer.start()
+        logger.info(f"Current timer {self.current_timer.return_state_str()}")
 
 
 if __name__ == '__main__':
