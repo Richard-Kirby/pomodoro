@@ -55,7 +55,7 @@ class TimerSequence:
     def toggle_pause_current_timer(self):
         self.current_timer.toggle_pause()
 
-    #Restart the current timer.
+    # Restart the current timer.
     def restart_current_timer(self):
         self.current_timer.restart()
 

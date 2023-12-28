@@ -18,7 +18,7 @@ class Clock(threading.Thread):
         self.current_time = datetime.datetime.now()
         self.current_timer_seq = self.timer_seq_mgr.timer_seq
 
-        # Set up and get the LCD display running.
+        # Set up and get the LCD running.
         self.lcd_display = display.LcdDisplay(self.timer_seq_mgr.timer_seq.toggle_pause_current_timer,
                                               self.timer_seq_mgr.timer_seq.restart_current_timer,
                                               self.timer_seq_mgr.timer_seq.next_timer)
