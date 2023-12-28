@@ -62,7 +62,7 @@ class Clock(threading.Thread):
 
 
 if __name__ == '__main__':
-    clock = Clock(1)
+    clock = Clock()
     clock.current_timer_seq.current_timer.start()
     clock.setDaemon(True)
     clock.start()

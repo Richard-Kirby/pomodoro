@@ -5,18 +5,8 @@ import datetime
 from abc import ABC, abstractmethod
 import threading
 import queue
-
-try:
-    from PIL import Image, ImageDraw, ImageFont
-except ImportError:
-    print("""This example requires PIL/Pillow, try:
-
-sudo apt install python3-pil
-
-""")
-
+from PIL import Image, ImageDraw, ImageFont
 from displayhatmini import DisplayHATMini
-import test
 
 
 # Class used to transmit timer data to the diplays.
@@ -181,7 +171,7 @@ class LcdDisplay(Display):
     # Draw the icons on the screen according to the mode
     # ToDo Icons should be different based on mode.
     def draw_icons(self, buffer):
-        # print (f"current mode {self._curr_mode}")
+        print(f"icons current mode {self._curr_mode}")
         if self._curr_mode == 'clock':
             buffer.paste(Image.open("icons/eject.png"), (0, 60), 0)
             buffer.paste(Image.open("icons/pause.png"), (280, 40), 0)
@@ -195,13 +185,27 @@ class LcdDisplay(Display):
         else:
             raise TypeError
 
+    # Write the text at the desired location, with the font colour and the bac_fill_colour.
+    @staticmethod
+    def write_text(draw, text, location, font, font_colour, border=0, back_fill_colour=None):
+
+        left, top, right, bottom = draw.textbbox(location, text, font=font)
+
+        # If a back_fill_colour is defined, then draw a text box around it with the requested background colour.
+        if back_fill_colour is not None:
+            draw.rectangle((left - border, top - border, right + border, bottom + border), fill=back_fill_colour)
+        else:
+            pass
+
+        draw.text(location, text, font=font, fill=font_colour)
+
     # Update the display to show the latest state.
     # TODO: add different modes
     def update_display(self):
         # print(f"{self.current_data.current_datetime}, {self.current_data.current_timer_data.remaining_timer_s}")
         # self.buffer = Image.new("RGB", (DisplayHATMini.WIDTH, DisplayHATMini.HEIGHT,), "BLACK")
 
-        self.buffer.paste(0, (0,0,DisplayHATMini.WIDTH-1, DisplayHATMini.HEIGHT-1))
+        self.buffer.paste(0, (0, 0, DisplayHATMini.WIDTH - 1, DisplayHATMini.HEIGHT - 1))
 
         disp_date = self.current_data.current_datetime.strftime("%d-%m-%Y")
         disp_time = self.current_data.current_datetime.strftime("%H:%M:%S")
@@ -229,6 +233,7 @@ class LcdDisplay(Display):
         # Go to the next image every minute
         elif self.current_data.current_timer_data.remaining_timer_s % 60 == 0:
             self.current_image = self.image_manager.get_current_image()
+            # self.draw_icons(self.buffer)
 
         else:  # no change
             self.current_image = self.current_image
@@ -237,36 +242,41 @@ class LcdDisplay(Display):
             # print(f"image size {img.size} display size {self.display.WIDTH} {self.display.HEIGHT}")
             # self.buffer.paste(img, (int((DisplayHATMini.WIDTH - DisplayHATMini.HEIGHT) / 2), 0))
             # print(f"x = {int((self.display.WIDTH - img.size[0])/2)} y = {int((self.display.HEIGHT - img.size[1])/2)}")
-            self.buffer.paste(img, (int((self.display.WIDTH - img.size[0])/2), int((self.display.HEIGHT - img.size[1])/2)))
+            self.buffer.paste(img, (int((self.display.WIDTH - img.size[0]) / 2),
+                                    int((self.display.HEIGHT - img.size[1]) / 2)))
+
+            # self.draw_icons(self.buffer)
 
             draw = ImageDraw.Draw(self.buffer)
-            self.draw_icons(self.buffer)
-
+            # self.draw_icons(self.buffer)
 
             draw.text((5, 0), f"{disp_date}", font=self.fonts['sub'])
             draw.text((200, 0), f"{disp_time}", font=self.fonts['sub'])
 
             pomodoro_str_size = self.fonts['main'].getsize(pomodoro_time_str)
 
-            text_loc = int ((self.display.WIDTH - pomodoro_str_size[0])/2), 60
-            left, top, right, bottom = draw.textbbox(text_loc, pomodoro_time_str, font=self.fonts['main'])
-            draw.rectangle((left - 5, top - 5, right + 5, bottom + 5), fill="black")
-            # draw.text(position, text, font=font, fill="black")
-
-            draw.text(text_loc, pomodoro_time_str, font=self.fonts['main'],
-                      fill=self.current_data.current_timer_data.timer_colour)
+            # Large display item
+            self.write_text(draw, pomodoro_time_str,
+                            (int((self.display.WIDTH - pomodoro_str_size[0]) / 2), 60), self.fonts['main'],
+                            self.current_data.current_timer_data.timer_colour, border=2,
+                            back_fill_colour='black')
 
             # ToDo: need to deal with different modes for font sizes.
             timer_name_size = self.fonts['sub'].getsize(self.current_data.current_timer_data.name)
-            draw.text(((self.display.WIDTH - timer_name_size[0])/2, 140),
-                      f"{self.current_data.current_timer_data.name}", font=self.fonts['sub'],
-                      fill=self.current_data.current_timer_data.timer_colour)
+
+            self.write_text(draw, self.current_data.current_timer_data.name,
+                            ((self.display.WIDTH - timer_name_size[0]) / 2, 140),
+                            self.fonts['sub'], self.current_data.current_timer_data.timer_colour,
+                            border=2, back_fill_colour='black')
+
+            timer_description_size = self.fonts['sub'].getsize(self.current_data.current_timer_data.description)
+
+            self.write_text(draw, self.current_data.current_timer_data.description,
+                            ((self.display.WIDTH - timer_description_size[0]) / 2, 170),
+                            self.fonts['sub'], self.current_data.current_timer_data.timer_colour,
+                            border=2, back_fill_colour='black')
 
             # ToDo: need to deal with different modes for font sizes.
-            timer_description_size = self.fonts['sub'].getsize(self.current_data.current_timer_data.description)
-            draw.text(((self.display.WIDTH - timer_description_size[0])/2, 170),
-                      f"{self.current_data.current_timer_data.description}", font=self.fonts['sub'],
-                      fill=self.current_data.current_timer_data.timer_colour)
 
             self.display.display()
 
@@ -275,11 +285,14 @@ if __name__ == '__main__':
     def toggle_pause_fnc():
         print("toggle pause function test")
 
+
     def back_fnc():
         print("back function test")
 
+
     def next_fnc():
         print("next function test")
+
 
     # print("here before run")
     lcd_display = LcdDisplay(toggle_pause_fnc, back_fnc, next_fnc)
